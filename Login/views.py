@@ -1,24 +1,46 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint
+from flask import redirect
 
-blue = Blueprint('blue', __name__, template_folder='templates',
-                 static_folder='static')
+blue = Blueprint('blue', __name__, template_folder='templates', static_folder='static')
 
-@blue.route('/tologin')
+from flask import render_template
+from flask import request
+from Login.models import User
+
+@blue.route('/tologin/')
 def tologin():
-    return render_template('tologin.html')
+    error_massage = request.args.get('error','')
+    return render_template('tologin.html',error_massage = error_massage)
 
-@blue.route('/login',methods=['POST','GET'])
+@blue.route('/login/', methods = ['POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        print(username)
-        print(password)
-    else:
-        print('获取方法错误')
-    return '已登陆'
+    username = request.form.get('username','')
+    password = request.form.get('password','')
 
-@blue.route('/regist',methods=['GET','POST'])
-def regist():
-    return redirect(url_for('blue.tologin'))
+    num = User.query.filter_by(username = username).count()
+    if num != 0:
+        user_list = User.query.filter_by(username = username).all()
+        for user in user_list:
+            if user.password == password:
+                return 'password is right'
+        error_password = '密码错误'
+        return redirect('/tologin?error=%s'%error_password)
+    else:
+        error_user = '用户不存在，请注册'
+        return redirect('/tologin?error=%s'%error_user)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
